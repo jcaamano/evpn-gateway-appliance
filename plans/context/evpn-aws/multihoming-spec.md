@@ -130,6 +130,20 @@ configured; no per-route-type knob. `evpn mh es-df-pref` is an optional
 preference override. No peer-link or inter-appliance BFD is required — the pair
 coordinates through BGP, not a shared link.
 
+**BUM handling — HER, not EVPN-PIM.** Overlay BUM (broadcast/unknown-unicast/
+multicast) uses **Head-End Replication** (ingress replication via Type-3/IMET),
+because the AWS TGW underlay provides no PIM-SM multicast; EVPN-MH permits only one
+of HER or EVPN-PIM and HER is the default
+([NVIDIA EVPN-MH required features](https://docs.nvidia.com/networking-ethernet-software/cumulus-linux-53/Network-Virtualization/Ethernet-Virtual-Private-Network-EVPN/EVPN-Multihoming/#required-features)).
+With HER, the split-horizon that stops a CE-originated BUM frame echoing back via
+the other appliance is **local bias** (RFC 8365), not the ESI/ESR label (the
+PIM/MPLS path). DF election and local bias de-duplicate/contain BUM at the
+multihomed CE and are **orthogonal to the replication mode**, not an alternative to
+it. Scale caveat: HER fan-out is one copy per remote VTEP (and the relay is out of
+the DX/IPSec data path), so keep residual BUM small with ARP/ND suppression
+(`neigh_suppress`) + Type-2/`nolearning`, and size HER fan-out in scale testing
+(7519).
+
 ## 5. BGP peering to a single relay
 
 The relay stays as today: eBGP, `next-hop-unchanged` (must apply to Type-1/Type-4
