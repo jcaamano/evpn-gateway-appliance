@@ -1,0 +1,32 @@
+---
+# Read running frr-k8s pods on the controller (the relay has no kubeconfig);
+# runs only when the cloud_workload group is empty, so peers can also be set in inventory.
+- name: Get running frr-k8s pods
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ frr_kubernetes_namespace | default('openshift-frr-k8s') }}"
+    label_selectors:
+      - "{{ frr_kubernetes_label | default('app=frr-k8s') }}"
+    field_selectors:
+      - status.phase=Running
+  delegate_to: localhost
+  become: false
+  register: _evpn_cloud_infra_frr_pods
+
+- name: Fail if no frr-k8s pods found
+  ansible.builtin.assert:
+    that: _evpn_cloud_infra_frr_pods.resources | length > 0
+    fail_msg: >-
+      No running frr-k8s pods in {{ frr_kubernetes_namespace | default('openshift-frr-k8s') }}
+      with selector {{ frr_kubernetes_label | default('app=frr-k8s') }};
+      record the workload peers in the cloud_workload inventory group instead.
+
+- name: Populate cloud_workload from frr-k8s nodes
+  ansible.builtin.add_host:
+    name: "{{ item.spec.nodeName }}"
+    groups: cloud_workload
+    private_ip: "{{ item.status.hostIP }}"
+  loop: "{{ _evpn_cloud_infra_frr_pods.resources }}"
+  loop_control:
+    label: "{{ item.spec.nodeName }}"
