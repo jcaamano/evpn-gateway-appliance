@@ -236,8 +236,10 @@ FRR_IMAGE=<ocp frr> NODE_EXPORTER_IMAGE=<ocp node-exporter> \
 test/e2e/run_molecule.sh
 ```
 
-Scenarios live under `ansible/extensions/molecule/` (see the Layout above). To run a single scenario,
-set `EGA_STAGE` to its nested path, for example `EGA_STAGE=evpn_onprem_appliance/nm_networking/default`.
+Scenarios live under `ansible/extensions/molecule/` (see the Layout above). Set `EGA_SCENARIOS`
+to one nested path or a comma-separated list, for example
+`EGA_SCENARIOS=evpn_onprem_appliance/nm_networking/default,evpn_onprem_appliance/nm_networking/modify`.
+Unset or empty runs all scenarios. The Molecule lane does not use `EGA_STAGE`.
 
 ## Status
 
