@@ -61,6 +61,17 @@ if [ ! -S "$EGA_RUNTIME_SOCK" ]; then
 	exit 1
 fi
 
+# Host kernel modules for the kind scenario: openvswitch for ovs-vswitchd,
+# br_netfilter for the route advertisements. The package must come from the
+# host's own repos — the toolchain container cannot install host-kernel modules.
+if [ "${EGA_ENTRYPOINT:-entrypoint_e2e.sh}" = entrypoint_e2e.sh ]; then
+	modprobe openvswitch 2>/dev/null || {
+		dnf install -y "kernel-modules-core-$(uname -r)"
+		modprobe openvswitch
+	}
+	modprobe br_netfilter 2>/dev/null || true
+fi
+
 mkdir -p "$EGA_WORK_DIR" "$EGA_ARTIFACT_DIR"
 # containerlab runs in this container but creates the node containers as siblings on the
 # host. To wire their veths it needs to see the nodes' host PIDs (--pid=host) and share

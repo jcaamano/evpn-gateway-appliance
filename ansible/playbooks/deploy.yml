@@ -13,16 +13,6 @@
     - evpn_cloud_infra
     - evpn_monitoring
 
-- name: Deploy cloud workload (EVPN VTEP)
-  hosts: cloud_workload
-  become: true
-  pre_tasks:
-    - name: Gather service facts
-      ansible.builtin.service_facts:
-  roles:
-    - evpn_cloud_workload
-    - evpn_monitoring
-
 - name: Deploy on-prem appliance (EVPN VTEP + VLAN trunk)
   hosts: onprem_appliances
   become: true
@@ -37,12 +27,12 @@
   hosts: localhost
   gather_facts: false
   tasks:
-    - name: Wait 15 seconds for BGP EVPN to converge
+    - name: Wait 30 seconds for BGP EVPN to converge
       ansible.builtin.pause:
-        seconds: 15
+        seconds: 30
 
 - name: Health checks
-  hosts: all
+  hosts: cloud_infra:onprem_appliances
   become: true
   roles:
     - evpn_health_check
