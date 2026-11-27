@@ -16,23 +16,20 @@ platforms:
     override_command: false
     extra_opts: ["--cgroupns=host"]
     groups: [cloud_infra]
-  - name: ega-teardown-workload
-    image: ${EGA_NODE_IMAGE}
-    pre_build_image: true
-    privileged: true
-    systemd: always
-    override_command: false
-    extra_opts: ["--cgroupns=host"]
-    groups: [cloud_workload]
 provisioner:
   playbooks:
     prepare: prepare.yml
     converge: converge.yml
   inventory:
+    hosts:
+      cloud_workload:
+        hosts:
+          # Inventory-only peer: relay configuration needs an address, not a managed VTEP.
+          workload-peer:
+            private_ip: 10.200.0.1
     group_vars:
       all:
         infra_relay_host: ega-teardown-relay
-        workload_vtep_host: ega-teardown-workload
         trunk_interface: trunk0
         tunnel:
           type: wireguard
@@ -46,5 +43,3 @@ provisioner:
       ega-teardown-relay:
         ansible_host: ega-teardown-relay
         private_ip: 10.100.0.1
-      ega-teardown-workload:
-        private_ip: 10.200.0.1

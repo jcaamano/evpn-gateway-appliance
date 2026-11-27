@@ -27,11 +27,9 @@ export EGA_NODE_IMAGE
 work=/tmp/ega/molecule
 rm -rf "${work}"; mkdir -p "${work}"
 cp -a /src/ansible "${work}/ansible"
-cp -a /src/test/ansible "${work}/test-ansible"
 col_root="${work}/collections"
 mkdir -p "${col_root}/ansible_collections/network"
 ln -sfn "${work}/ansible" "${col_root}/ansible_collections/network/evpn_gateway"
-ln -sfn "${work}/test-ansible" "${col_root}/ansible_collections/network/evpn_gateway_test"
 export ANSIBLE_COLLECTIONS_PATH="${col_root}:/usr/share/ansible/collections"
 
 # Collection-mode: scenarios live under extensions/molecule/<role>/<scenario>/. Run from the

@@ -1,6 +1,6 @@
 ---
 - name: Prepare teardown fixtures
-  hosts: all
+  hosts: onprem_appliances:cloud_infra
   gather_facts: false
   tasks:
     # The container has the bootc image's packages but not its boot marker. Avoid RPM installation.

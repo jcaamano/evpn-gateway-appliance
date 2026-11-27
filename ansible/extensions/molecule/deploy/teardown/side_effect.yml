@@ -1,6 +1,6 @@
 ---
 - name: Capture the deployed FRR state
-  hosts: all
+  hosts: onprem_appliances:cloud_infra
   gather_facts: false
   tasks:
     - name: Read FRR state
@@ -18,7 +18,7 @@
         _deployed_frr_pid: "{{ _frr_pid.stdout }}"
 
 - name: Tear down the deployed fabric through the shipped playbook
-  ansible.builtin.import_playbook: teardown.yml
+  ansible.builtin.import_playbook: network.evpn_gateway.teardown
 
 - name: Verify the first teardown
   ansible.builtin.import_playbook: verify.yml
@@ -28,13 +28,13 @@
   connection: local
   gather_facts: false
   tasks:
-    - name: Run the appliance and test-only workload teardown again
+    - name: Run the shipped teardown again
       ansible.builtin.command:
         argv:
           - ansible-playbook
           - -i
           - "{{ lookup('env', 'MOLECULE_INVENTORY_FILE') }}"
-          - "{{ playbook_dir }}/teardown.yml"
+          - network.evpn_gateway.teardown
       environment:
         ANSIBLE_STDOUT_CALLBACK: default
         ANSIBLE_NOCOLOR: "1"
@@ -48,7 +48,7 @@
         that:
           - >-
             _second_teardown.stdout is search(item ~ '\s+: ok=[1-9][0-9]*\s+changed=1\s+unreachable=0\s+failed=0')
-      loop: "{{ groups['onprem_appliances'] + groups['cloud_infra'] + groups['cloud_workload'] }}"
+      loop: "{{ groups['onprem_appliances'] + groups['cloud_infra'] }}"
 
 - name: Verify the same baseline after the second teardown
   ansible.builtin.import_playbook: verify.yml

@@ -1,6 +1,6 @@
 ---
 - name: Verify the unconfigured appliance baseline and unrelated resources
-  hosts: all
+  hosts: onprem_appliances:cloud_infra
   gather_facts: false
   tasks:
     - name: Read FRR state
